@@ -16,6 +16,7 @@ setup(
     url='https://github.com/nejucomo/{}'.format(PACKAGE),
     packages=find_packages(),
     install_requires=[
+        'functable >= 0.2',
         'genty >= 1.3.2',
         'pathlib2 >= 2.3.0',
         'mock >= 2.0.0',

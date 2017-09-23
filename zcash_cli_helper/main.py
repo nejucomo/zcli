@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
 import sys
-import argparse
+from .cliparse import parse_args
 
 
 def main(args=sys.argv[1:]):
@@ -10,12 +8,3 @@ def main(args=sys.argv[1:]):
     """
     opts = parse_args(args)
     raise NotImplementedError((main, opts))
-
-
-def parse_args(args):
-    p = argparse.ArgumentParser(description=main.__doc__)
-    return p.parse_args(args)
-
-
-if __name__ == '__main__':
-    main()
