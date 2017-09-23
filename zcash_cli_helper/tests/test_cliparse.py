@@ -1,14 +1,14 @@
 from unittest import TestCase
 from mock import call, patch, sentinel, ANY
 from pathlib2 import Path
-from zcash_cli_helper import cliparse
+from zcash_cli_helper import clargs
 
 
 class parse_args_tests (TestCase):
     @patch('argparse.ArgumentParser')
     def test_parse_args(self, m_ArgumentParser):
 
-        result = cliparse.parse_args(sentinel.DESCRIPTION, sentinel.ARGS)
+        result = clargs.parse_args(sentinel.DESCRIPTION, sentinel.ARGS)
 
         self.assertEqual(
             m_ArgumentParser.mock_calls[:3],

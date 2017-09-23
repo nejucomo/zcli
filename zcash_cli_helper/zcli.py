@@ -5,12 +5,12 @@ from decimal import Decimal
 from zcash_cli_helper import saferjson
 
 
-class CLI (object):
+class ZCLI (object):
     def __init__(self, datadir):
         assert isinstance(datadir, Path), repr(datadir)
         self._execname = 'zcash-cli'
         self._datadir = datadir
-        self._log = logging.getLogger('CLI')
+        self._log = logging.getLogger('ZCLI')
 
     def call_rpc(self, *args):
         argsprefix = [self._execname, '-datadir={}'.format(self._datadir)]
@@ -32,4 +32,4 @@ class CLI (object):
         elif t in [bool, unicode, list, dict]:
             return saferjson.dumps_compact(arg)
         else:
-            assert False, 'Invalid CLI argument: {!r}'.format(arg)
+            assert False, 'Invalid ZCLI argument: {!r}'.format(arg)

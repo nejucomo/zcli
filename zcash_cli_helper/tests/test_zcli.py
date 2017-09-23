@@ -3,14 +3,14 @@ from pathlib2 import Path
 from decimal import Decimal
 from genty import genty, genty_dataset
 from mock import call, patch
-from zcash_cli_helper.cli import CLI
+from zcash_cli_helper.zcli import ZCLI
 
 
 @genty
-class CLI_tests (unittest.TestCase):
+class ZCLI_tests (unittest.TestCase):
     def setUp(self):
         with patch('logging.getLogger'):
-            self.cli = CLI(Path('FAKE-DATADIR'))
+            self.cli = ZCLI(Path('FAKE-DATADIR'))
         self.m_log = self.cli._log
 
     call_rpc_argsets = dict(
@@ -53,7 +53,7 @@ class CLI_tests (unittest.TestCase):
 
     @genty_dataset(**call_rpc_argsets)
     def test_call_rpc_json(self, params, _):
-        with patch('zcash_cli_helper.cli.CLI.call_rpc') as m_call_rpc:
+        with patch('zcash_cli_helper.zcli.ZCLI.call_rpc') as m_call_rpc:
             with patch('zcash_cli_helper.saferjson.loads') as m_loads:
                 self.cli.call_rpc_json(*params)
 
@@ -83,7 +83,7 @@ class CLI_tests (unittest.TestCase):
         ),
     )
     def test_encode_arg(self, value, expected):
-        actual = CLI._encode_arg(value)
+        actual = ZCLI._encode_arg(value)
         self.assertEqual(actual, expected)
 
     @genty_dataset(
@@ -91,4 +91,4 @@ class CLI_tests (unittest.TestCase):
         float=(3.1415,),
     )
     def test_encode_arg_bad_value(self, value):
-        self.assertRaises(AssertionError, CLI._encode_arg, value)
+        self.assertRaises(AssertionError, ZCLI._encode_arg, value)
