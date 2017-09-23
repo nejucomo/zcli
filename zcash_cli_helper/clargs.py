@@ -17,6 +17,6 @@ def parse_args(description, args):
     subp = p.add_subparsers()
     for (name, f) in COMMANDS.iteritems():
         cmdp = subp.add_parser(name.replace('_', '-'), help=f.__doc__)
-        cmdp.set_default(func=f)
+        cmdp.set_defaults(func=f)
 
     return p.parse_args(args)

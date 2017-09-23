@@ -12,7 +12,7 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_parse_args.mock_calls,
-            [call(sentinel.ARGS),
+            [call(main.__doc__, sentinel.ARGS),
              call().func(m_ZCLI.return_value)])
 
         self.assertEqual(
