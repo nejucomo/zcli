@@ -4,9 +4,9 @@ from pathlib2 import Path
 from zcash_cli_helper import cliparse
 
 
-class MainTests (TestCase):
+class parse_args_tests (TestCase):
     @patch('argparse.ArgumentParser')
-    def test_main(self, m_ArgumentParser):
+    def test_parse_args(self, m_ArgumentParser):
 
         result = cliparse.parse_args(sentinel.DESCRIPTION, sentinel.ARGS)
 

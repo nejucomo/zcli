@@ -1,10 +1,10 @@
 import sys
-from .cliparse import parse_args
+from zcash_cli_helper import cliparse, cli
 
 
 def main(args=sys.argv[1:]):
     """
     Simply certain useful tasks on top of the Zcash RPC interface.
     """
-    opts = parse_args(args)
-    raise NotImplementedError((main, opts))
+    opts = cliparse.parse_args(args)
+    opts.func(cli.CLI(opts.BASEDIR))
