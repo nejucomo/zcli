@@ -9,7 +9,7 @@ def main(args=sys.argv[1:]):
     Simply certain useful tasks on top of the Zcash RPC interface.
     """
     opts = parse_args(args)
-    raise NotImplementedError('main')
+    raise NotImplementedError((main, opts))
 
 
 def parse_args(args):
