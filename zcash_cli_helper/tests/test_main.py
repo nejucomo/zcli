@@ -17,4 +17,4 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_ZCLI.mock_calls,
-            [call(m_parse_args.return_value.BASEDIR)])
+            [call(m_parse_args.return_value.DATADIR)])
