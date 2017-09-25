@@ -12,11 +12,12 @@ class ZCLI (object):
         self._log = logging.getLogger('ZCLI')
 
     def __getattr__(self, method):
-        return ZCLIMethod(self._execname, self._datadir, self._log)
+        return ZCLIMethod(method, self._execname, self._datadir, self._log)
 
 
 class ZCLIMethod (object):
-    def __init__(self, execname, datadir, log):
+    def __init__(self, method, execname, datadir, log):
+        self._method = method
         self._execname = execname
         self._datadir = datadir
         self._log = log
@@ -28,7 +29,11 @@ class ZCLIMethod (object):
         return result
 
     def _call_raw_result(self, *args):
-        argsprefix = [self._execname, '-datadir={}'.format(self._datadir)]
+        argsprefix = [
+            self._execname,
+            '-datadir={}'.format(self._datadir),
+            self._method,
+        ]
         fullargs = argsprefix + map(saferjson.encode_param, args)
         self._log.debug('Running: %r', fullargs)
         return subprocess.check_output(fullargs).rstrip()

@@ -22,7 +22,12 @@ class ZCLI_tests (unittest.TestCase):
 class ZCLIMethod_tests (unittest.TestCase):
     def setUp(self):
         self.m_log = MagicMock()
-        self.m = ZCLIMethod('FAKE-EXEC', Path('FAKE-DATADIR'), self.m_log)
+        self.m = ZCLIMethod(
+            'FAKE-METHOD',
+            'FAKE-EXEC',
+            Path('FAKE-DATADIR'),
+            self.m_log,
+        )
 
     call_rpc_argsets = dict(
         nothing=(
@@ -49,6 +54,7 @@ class ZCLIMethod_tests (unittest.TestCase):
         fullexpectedargs = [
             'FAKE-EXEC',
             '-datadir=FAKE-DATADIR',
+            'FAKE-METHOD',
         ] + expectedargs
 
         self.assertEqual(
