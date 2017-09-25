@@ -8,7 +8,37 @@ from zcash_cli_helper.saferjson import \
     dump_pretty, \
     dumps_compact, \
     dumps_pretty, \
+    encode_param, \
     loads
+
+
+@genty
+class encode_param_tests (unittest.TestCase):
+    @genty_dataset(
+        string=('foo', 'foo'),
+        true=(True, 'true'),
+        false=(False, 'false'),
+        integer=(42, '42'),
+        decimal=(Decimal('42.03489096'), '42.03489096'),
+        text=(u'bar', '"bar"'),
+        array_empty=([], '[]'),
+        array_full=(['a', 'b', 'c'], '["a","b","c"]'),
+        object_empty=({}, '{}'),
+        object_full=(
+            {'a': 'apple', 'b': 'banana', 'c': 'coconut'},
+            '{"a":"apple","b":"banana","c":"coconut"}',
+        ),
+    )
+    def test_encode_arg(self, value, expected):
+        actual = encode_param(value)
+        self.assertEqual(actual, expected)
+
+    @genty_dataset(
+        null=(None,),
+        float=(3.1415,),
+    )
+    def test_encode_arg_bad_value(self, value):
+        self.assertRaises(AssertionError, encode_param, value)
 
 
 @genty

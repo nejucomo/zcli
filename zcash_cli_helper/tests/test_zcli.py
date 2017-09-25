@@ -1,6 +1,5 @@
 import unittest
 from pathlib2 import Path
-from decimal import Decimal
 from genty import genty, genty_dataset
 from mock import MagicMock, call, patch
 from zcash_cli_helper.zcli import ZCLI, ZCLIMethod
@@ -85,29 +84,3 @@ class ZCLIMethod_tests (unittest.TestCase):
             m_loads.mock_calls,
             [call(m_crr.return_value)],
         )
-
-    @genty_dataset(
-        string=('foo', 'foo'),
-        true=(True, 'true'),
-        false=(False, 'false'),
-        integer=(42, '42'),
-        decimal=(Decimal('42.03489096'), '42.03489096'),
-        text=(u'bar', '"bar"'),
-        array_empty=([], '[]'),
-        array_full=(['a', 'b', 'c'], '["a","b","c"]'),
-        object_empty=({}, '{}'),
-        object_full=(
-            {'a': 'apple', 'b': 'banana', 'c': 'coconut'},
-            '{"a":"apple","b":"banana","c":"coconut"}',
-        ),
-    )
-    def test_encode_arg(self, value, expected):
-        actual = ZCLIMethod._encode_arg(value)
-        self.assertEqual(actual, expected)
-
-    @genty_dataset(
-        null=(None,),
-        float=(3.1415,),
-    )
-    def test_encode_arg_bad_value(self, value):
-        self.assertRaises(AssertionError, ZCLIMethod._encode_arg, value)

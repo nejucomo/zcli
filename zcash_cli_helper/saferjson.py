@@ -2,6 +2,19 @@ import json
 from decimal import Decimal
 
 
+def encode_param(arg, pretty=False):
+    t = type(arg)
+    if t is str:
+        return arg
+    elif t in [int, Decimal]:
+        return str(arg)
+    elif t in [bool, unicode, list, dict]:
+        dumpf = dumps_pretty if pretty else dumps_compact
+        return dumpf(arg)
+    else:
+        assert False, 'Invalid ZCLI argument: {!r}'.format(arg)
+
+
 def dump_pretty(obj, f):
     return json.dump(
         obj,

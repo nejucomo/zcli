@@ -1,7 +1,6 @@
 import subprocess
 import logging
 from pathlib2 import Path
-from decimal import Decimal
 from zcash_cli_helper import saferjson
 
 
@@ -30,18 +29,6 @@ class ZCLIMethod (object):
 
     def _call_raw_result(self, *args):
         argsprefix = [self._execname, '-datadir={}'.format(self._datadir)]
-        fullargs = argsprefix + map(self._encode_arg, args)
+        fullargs = argsprefix + map(saferjson.encode_param, args)
         self._log.debug('Running: %r', fullargs)
         return subprocess.check_output(fullargs).rstrip()
-
-    @staticmethod
-    def _encode_arg(arg):
-        t = type(arg)
-        if t is str:
-            return arg
-        elif t in [int, Decimal]:
-            return str(arg)
-        elif t in [bool, unicode, list, dict]:
-            return saferjson.dumps_compact(arg)
-        else:
-            assert False, 'Invalid ZCLI argument: {!r}'.format(arg)
