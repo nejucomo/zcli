@@ -8,6 +8,7 @@ class main_tests (TestCase):
     @patch('zcash_cli_helper.clargs.parse_args')
     @patch('zcash_cli_helper.zcli.ZCLI')
     def test_main(self, m_ZCLI, m_parse_args, m_stdout):
+        m_parse_args.return_value.DEBUG = True
         m_parse_args.return_value.func.return_value = ["json", "result"]
 
         main(sentinel.ARGS)
