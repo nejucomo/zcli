@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+from zcash_cli_helper.acctab import AccumulatorTable
 
 
 def encode_param(arg, pretty=False):
@@ -8,7 +9,7 @@ def encode_param(arg, pretty=False):
         return arg
     elif t in [int, Decimal]:
         return str(arg)
-    elif t in [bool, unicode, list, dict]:
+    elif t in [bool, unicode, list, dict, AccumulatorTable]:
         dumpf = dumps_pretty if pretty else dumps_compact
         return dumpf(arg)
     else:

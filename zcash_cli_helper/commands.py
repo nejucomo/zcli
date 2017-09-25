@@ -1,7 +1,6 @@
-import sys
 from functable import FunctionTable
 from zcash_cli_helper.acctab import AccumulatorTable
-from zcash_cli_helper.saferjson import dump_pretty
+
 
 COMMANDS = FunctionTable()
 
@@ -17,6 +16,6 @@ def list_balances(zc):
 
     # Gather t-addr balances:
     for zaddr in zc.z_listaddresses():
-        balances[zaddr] = zc.z_getbalance(zaddr)
+        balances[zaddr] = zc.z_getbalance(zaddr.encode('utf8'))
 
-    dump_pretty(balances, sys.stdout)
+    return balances
