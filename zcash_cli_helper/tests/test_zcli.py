@@ -2,16 +2,28 @@ import unittest
 from pathlib2 import Path
 from decimal import Decimal
 from genty import genty, genty_dataset
-from mock import call, patch
-from zcash_cli_helper.zcli import ZCLI
+from mock import MagicMock, call, patch
+from zcash_cli_helper.zcli import ZCLI, ZCLIMethod
+
+
+class ZCLI_tests (unittest.TestCase):
+    def test_getattr(self):
+        f_datadir = Path('FAKE-DATADIR')
+        zcli = ZCLI(f_datadir)
+
+        m = zcli.some_method
+
+        self.assertIsInstance(m, ZCLIMethod)
+        self.assertEqual('zcash-cli', m._execname)
+        self.assertEqual(f_datadir, m._datadir)
+        self.assertIs(zcli._log, m._log)
 
 
 @genty
-class ZCLI_tests (unittest.TestCase):
+class ZCLIMethod_tests (unittest.TestCase):
     def setUp(self):
-        with patch('logging.getLogger'):
-            self.cli = ZCLI(Path('FAKE-DATADIR'))
-        self.m_log = self.cli._log
+        self.m_log = MagicMock()
+        self.m = ZCLIMethod('FAKE-EXEC', Path('FAKE-DATADIR'), self.m_log)
 
     call_rpc_argsets = dict(
         nothing=(
@@ -29,12 +41,14 @@ class ZCLI_tests (unittest.TestCase):
     )
 
     @genty_dataset(**call_rpc_argsets)
-    def test_call_rpc(self, params, expectedargs):
+    def test_call(self, params, expectedargs):
         with patch('subprocess.check_output') as m_check_output:
-            self.cli.call_rpc(*params)
+            m_check_output.return_value = 'not json object or list'
+
+            self.m(*params)
 
         fullexpectedargs = [
-            'zcash-cli',
+            'FAKE-EXEC',
             '-datadir=FAKE-DATADIR',
         ] + expectedargs
 
@@ -47,24 +61,29 @@ class ZCLI_tests (unittest.TestCase):
             m_check_output.mock_calls,
             [
                 call(fullexpectedargs),
-                call().rstrip(),
             ],
         )
 
     @genty_dataset(**call_rpc_argsets)
-    def test_call_rpc_json(self, params, _):
-        with patch('zcash_cli_helper.zcli.ZCLI.call_rpc') as m_call_rpc:
+    def test_call_json(self, params, _):
+        with patch(
+                'zcash_cli_helper.zcli.ZCLIMethod._call_raw_result'
+        ) as m_crr:
+
+            # Trigger Json parsing:
+            m_crr.return_value = '[]'
+
             with patch('zcash_cli_helper.saferjson.loads') as m_loads:
-                self.cli.call_rpc_json(*params)
+                self.m(*params)
 
         self.assertEqual(
-            m_call_rpc.mock_calls,
+            m_crr.mock_calls,
             [call(*params)],
         )
 
         self.assertEqual(
             m_loads.mock_calls,
-            [call(m_call_rpc.return_value)],
+            [call(m_crr.return_value)],
         )
 
     @genty_dataset(
@@ -83,7 +102,7 @@ class ZCLI_tests (unittest.TestCase):
         ),
     )
     def test_encode_arg(self, value, expected):
-        actual = ZCLI._encode_arg(value)
+        actual = ZCLIMethod._encode_arg(value)
         self.assertEqual(actual, expected)
 
     @genty_dataset(
@@ -91,4 +110,4 @@ class ZCLI_tests (unittest.TestCase):
         float=(3.1415,),
     )
     def test_encode_arg_bad_value(self, value):
-        self.assertRaises(AssertionError, ZCLI._encode_arg, value)
+        self.assertRaises(AssertionError, ZCLIMethod._encode_arg, value)
