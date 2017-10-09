@@ -1,5 +1,5 @@
 from functable import FunctionTable
-from zcash_cli_helper.acctab import AccumulatorTable
+from zcli.acctab import AccumulatorTable
 
 
 COMMANDS = FunctionTable()

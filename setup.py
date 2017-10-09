@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 
-PACKAGE = 'zcash_cli_helper'
+PACKAGE = 'zcli'
 DESCRIPTION = 'Simply certain useful tasks on top of the Zcash RPC interface.',
 
 setup(

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mock import call, patch, sentinel
-from zcash_cli_helper import clargs
+from zcli import clargs
 
 
 class parse_args_tests (TestCase):

@@ -1,6 +1,6 @@
 import json
 from decimal import Decimal
-from zcash_cli_helper.acctab import AccumulatorTable
+from zcli.acctab import AccumulatorTable
 
 
 def encode_param(arg, pretty=False):
@@ -13,7 +13,7 @@ def encode_param(arg, pretty=False):
         dumpf = dumps_pretty if pretty else dumps_compact
         return dumpf(arg)
     else:
-        assert False, 'Invalid ZCLI argument: {!r}'.format(arg)
+        assert False, 'Invalid ZcashCLI argument: {!r}'.format(arg)
 
 
 def dump_pretty(obj, f):

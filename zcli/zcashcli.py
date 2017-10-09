@@ -1,21 +1,21 @@
 import subprocess
 import logging
 from pathlib2 import Path
-from zcash_cli_helper import saferjson
+from zcli import saferjson
 
 
-class ZCLI (object):
+class ZcashCLI (object):
     def __init__(self, datadir):
         assert isinstance(datadir, Path), repr(datadir)
         self._execname = 'zcash-cli'
         self._datadir = datadir
-        self._log = logging.getLogger('ZCLI')
+        self._log = logging.getLogger('ZcashCLI')
 
     def __getattr__(self, method):
-        return ZCLIMethod(method, self._execname, self._datadir, self._log)
+        return ZcashCLIMethod(method, self._execname, self._datadir, self._log)
 
 
-class ZCLIMethod (object):
+class ZcashCLIMethod (object):
     def __init__(self, method, execname, datadir, log):
         self._method = method
         self._execname = execname

@@ -1,5 +1,5 @@
 ==================
- zcash-cli-helper
+ zcli
 ==================
 
 A commandline tool to make certain tasks simpler with zcash-cli.

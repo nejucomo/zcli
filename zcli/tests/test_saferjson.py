@@ -3,7 +3,7 @@ from cStringIO import StringIO
 from textwrap import dedent
 from decimal import Decimal
 from genty import genty, genty_dataset
-from zcash_cli_helper.saferjson import \
+from zcli.saferjson import \
     dump_compact, \
     dump_pretty, \
     dumps_compact, \

@@ -2,27 +2,27 @@ import unittest
 from pathlib2 import Path
 from genty import genty, genty_dataset
 from mock import MagicMock, call, patch
-from zcash_cli_helper.zcli import ZCLI, ZCLIMethod
+from zcli.zcashcli import ZcashCLI, ZcashCLIMethod
 
 
-class ZCLI_tests (unittest.TestCase):
+class ZcashCLI_tests (unittest.TestCase):
     def test_getattr(self):
         f_datadir = Path('FAKE-DATADIR')
-        zcli = ZCLI(f_datadir)
+        zcli = ZcashCLI(f_datadir)
 
         m = zcli.some_method
 
-        self.assertIsInstance(m, ZCLIMethod)
+        self.assertIsInstance(m, ZcashCLIMethod)
         self.assertEqual('zcash-cli', m._execname)
         self.assertEqual(f_datadir, m._datadir)
         self.assertIs(zcli._log, m._log)
 
 
 @genty
-class ZCLIMethod_tests (unittest.TestCase):
+class ZcashCLIMethod_tests (unittest.TestCase):
     def setUp(self):
         self.m_log = MagicMock()
-        self.m = ZCLIMethod(
+        self.m = ZcashCLIMethod(
             'FAKE-METHOD',
             'FAKE-EXEC',
             Path('FAKE-DATADIR'),
@@ -72,13 +72,13 @@ class ZCLIMethod_tests (unittest.TestCase):
     @genty_dataset(**call_rpc_argsets)
     def test_call_json(self, params, _):
         with patch(
-                'zcash_cli_helper.zcli.ZCLIMethod._call_raw_result'
+                'zcli.zcashcli.ZcashCLIMethod._call_raw_result'
         ) as m_crr:
 
             # Trigger Json parsing:
             m_crr.return_value = '[]'
 
-            with patch('zcash_cli_helper.saferjson.loads') as m_loads:
+            with patch('zcli.saferjson.loads') as m_loads:
                 self.m(*params)
 
         self.assertEqual(
