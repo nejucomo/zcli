@@ -9,7 +9,15 @@ def main(args=sys.argv[1:]):
     """
     opts = clargs.parse_args(main.__doc__, args)
     init_logging(opts.DEBUG)
-    result = opts.func(zcashcli.ZcashCLI(opts.DATADIR))
+
+    args = [zcashcli.ZcashCLI(opts.DATADIR)]
+    for name in opts.argnames:
+        args.append(getattr(opts, name))
+    van = opts.varargsname
+    if van is not None:
+        args.extend(van)
+
+    result = opts.func(*args)
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
 
 
