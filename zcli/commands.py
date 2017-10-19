@@ -15,13 +15,22 @@ def list_balances(zc):
 
     # Gather t-addr balances:
     for utxo in zc.listunspent():
-        balances[utxo['address']] += utxo['amount']
+        if utxo['spendable'] is True:
+            balances[utxo['address']] += utxo['amount']
 
     # Gather t-addr balances:
     for zaddr in zc.z_listaddresses():
-        balances[zaddr] = zc.z_getbalance(zaddr.encode('utf8'))
+        balances[zaddr] = Decimal(zc.z_getbalance(zaddr.encode('utf8')))
 
-    return balances
+    return {
+        'total': sum(balances.values()),
+        'addresses': dict(
+            (k, v)
+            for (k, v)
+            in balances.iteritems()
+            if v > 0
+        ),
+    }
 
 
 @COMMANDS.register
