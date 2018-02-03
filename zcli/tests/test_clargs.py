@@ -7,14 +7,17 @@ class parse_args_tests (TestCase):
     @patch('argparse.ArgumentParser')
     def test_parse_args(self, m_ArgumentParser):
 
+        class FakeOpts (object):
+            def __init__(self):
+                self.DATADIR = sentinel.DATADIR
+                self.DEBUG = sentinel.DEBUG
+                self.FAKE_ARG_A = sentinel.FAKE_ARG_A
+                self.FAKE_ARG_B = sentinel.FAKE_ARG_B
+
         m_p = m_ArgumentParser.return_value
-        m_opts = m_p.cmdclass.post_process_args.return_value
-        m_opts.__dict__ = {
-            'DATADIR': sentinel.DATADIR,
-            'DEBUG': sentinel.DEBUG,
-            'FAKE_ARG_A': sentinel.FAKE_ARG_A,
-            'FAKE_ARG_B': sentinel.FAKE_ARG_B,
-        }
+        m_opts = m_p.parse_args.return_value
+        m_cmdclass = m_opts.cmdclass
+        m_cmdclass.post_process_args.return_value = FakeOpts()
 
         result = clargs.parse_args(sentinel.DESCRIPTION, sentinel.ARGS)
 
@@ -33,7 +36,7 @@ class parse_args_tests (TestCase):
                     'DATADIR': sentinel.DATADIR,
                     'DEBUG': sentinel.DEBUG,
                 },
-                m_p.cmdclass.run,
+                m_cmdclass.run,
                 {
                     'FAKE_ARG_A': sentinel.FAKE_ARG_A,
                     'FAKE_ARG_B': sentinel.FAKE_ARG_B,

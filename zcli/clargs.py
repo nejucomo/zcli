@@ -9,15 +9,17 @@ def parse_args(description, args):
     add_subcommand_args(p.add_subparsers())
 
     opts = p.parse_args(args)
-    opts = p.cmdclass.post_process_args(opts, p.error)
 
-    cmdkwargs = vars(opts)
+    cmdclass = opts.cmdclass
+    del opts.cmdclass
+
+    cmdkwargs = vars(cmdclass.post_process_args(opts, p.error))
 
     globopts = {}
-    for globopt in ['DATADIR', 'DEBUG']:
-        globopts[globopt] = cmdkwargs.pop(globopt)
+    for gopt in ['DATADIR', 'DEBUG']:
+        globopts[gopt] = cmdkwargs.pop(gopt)
 
-    return (globopts, p.cmdclass.run, cmdkwargs)
+    return (globopts, cmdclass.run, cmdkwargs)
 
 
 def add_standard_args(argparser):
