@@ -143,8 +143,8 @@ class send (BaseCommand):
         return opts
 
     @staticmethod
-    def run(zc, SOURCE, DEST):
-        opid = zc.z_sendmany(SOURCE, DEST)
+    def run(zc, SOURCE, DESTINFO):
+        opid = zc.z_sendmany(SOURCE, DESTINFO)
         wait.run(zc, OPID=[opid])
 
 
