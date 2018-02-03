@@ -15,6 +15,25 @@ class ZcashCLI (object):
         return ZcashCLIMethod(method, self._execname, self._datadir, self._log)
 
 
+class ComposedZcashCLI (ZcashCLI):
+    """Extends ZcashCli with useful call compositions as methods."""
+
+    def iter_blocks(self, blockhash=None):
+        if blockhash is None:
+            blockhash = self.getblockhash(1)
+
+        while blockhash is not None:
+            block = self.getblock(blockhash)
+            yield block
+            blockhash = block.get('nextblockhash').encode('utf8')
+
+    def iter_transactions(self, startblockhash=None):
+        for block in self.iter_blocks(startblockhash):
+            for txidu in block['tx']:
+                txid = txidu.encode('utf8')
+                yield (block, self.getrawtransaction(txid, 1))
+
+
 class ZcashCLIMethod (object):
     def __init__(self, method, execname, datadir, log):
         self._method = method
