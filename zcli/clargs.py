@@ -11,9 +11,10 @@ def parse_args(description, args):
     for (name, cls) in COMMANDS.iteritems():
         cmdp = subp.add_parser(name.replace('_', '-'), help=cls.__doc__)
         cls.add_arg_parser(cmdp)
-        cmdp.set_defaults(func=cls.run)
+        cmdp.set_defaults(cmdclass=cls)
 
     opts = p.parse_args(args)
+    opts = p.cmdclass.post_process_args(opts, p.error)
 
     cmdkwargs = vars(opts)
     del cmdkwargs['DATADIR']

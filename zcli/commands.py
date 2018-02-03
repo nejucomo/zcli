@@ -8,13 +8,19 @@ MINCONF = 6
 COMMANDS = FunctionTable()
 
 
-@COMMANDS.register
-class list_balances (object):
-    """List all known address balances."""
-
+class BaseCommand (object):
     @staticmethod
     def add_arg_parser(p):
         return
+
+    @staticmethod
+    def post_process_args(opts, usage_error):
+        return opts
+
+
+@COMMANDS.register
+class list_balances (BaseCommand):
+    """List all known address balances."""
 
     @staticmethod
     def run(zc):
@@ -41,7 +47,7 @@ class list_balances (object):
 
 
 @COMMANDS.register
-class send (object):
+class send (BaseCommand):
     """Send from an address to multiple recipients."""
 
     @staticmethod
@@ -51,80 +57,99 @@ class send (object):
             help='Source address.',
         )
 
-        def destination_info(arg):
-            fields = arg.split(',', 2)
-            assert len(fields) <= 3, fields
-            if not (2 <= len(fields)):
-                p.error(
-                    ('Expected ADDR,AMOUNT[,MEMO] for destination argument, '
-                     'found: {!r}')
-                    .format(arg)
-                )
+        p.add_argument(
+            'DESTINFO',
+            nargs='+',
+            help='''
+                Destination arguments in repeating sequence of: ADDR
+                AMOUNT [MEMO]. A MEMO must begin with either "0x" for hex
+                encoding or ":" for a simple string. A MEMO must not be
+                present if ADDR is not a Z Address (beginning with "zc").
+            ''',
+        )
 
-            else:
-                (addr, amounttext) = fields[:2]
+    @staticmethod
+    def post_process_args(opts, usage_error):
+        entries = []
+
+        entry = {}
+        for di in opts.DESTINFO:
+            if len(entry) == 0:
+                entry['address'] = di
+
+            elif len(entry) == 1:
                 try:
-                    amount = Decimal(amounttext)
+                    entry['amount'] = Decimal(di)
                 except InvalidOperation as e:
-                    p.error(
+                    usage_error(
                         ('Could not parse amount; {}')
                         .format(e)
                     )
 
-                entry = {
-                    'address': addr,
-                    'amount': amount,
-                }
+            elif len(entry) == 2:
+                hasmemo = False
 
-                if len(fields) == 3:
-                    memo = fields[2]
+                if di.startswith('0x') or di.startswith(':'):
+                    hasmemo = True
+
+                    # It's a memo field:
+                    addr = entry['address']
                     if addr.startswith('zc'):
-                        if memo.startswith('0x'):
+                        if di.startswith('0x'):
                             # Hex encoding:
-                            memo = memo[2:]
+                            memohex = di[2:]
                             try:
-                                memo.decode('hex')
+                                memohex.decode('hex')
                             except TypeError as e:
-                                p.error(
+                                usage_error(
                                     ('Could not decode MEMO from 0x '
                                      'hexadecimal format: {}')
                                     .format(e)
                                 )
-                        elif memo.startswith(':'):
-                            memo = memo.encode('hex')
+                        elif di.startswith(':'):
+                            memohex = di[1:].encode('hex')
                         else:
-                            p.error(
-                                ('MEMO must start with "0x" for hex '
-                                 'encoding or ":" for plain string '
-                                 'encoding. Found: {!r}')
-                                .format(memo)
-                            )
+                            assert False, 'Unreachable code.'
 
-                        entry['memo'] = memo
+                        entry['memo'] = memohex
                     else:
-                        p.error(
+                        usage_error(
                             ('Destination address {!r} is not a Z Address '
                              'and cannot receive a memo: {!r}')
-                            .format(addr, memo)
+                            .format(addr, di)
                         )
 
-                return entry
+                entries.append(entry)
+                entry = {}
 
-        p.add_argument(
-            'DEST',
-            nargs='+',
-            type=destination_info,
-            help='Destination ADDR,AMOUNT[,MEMO].',
-        )
+                if not hasmemo:
+                    entry["address"] = di
+
+            else:
+                assert False, 'Unreachable code.'
+
+        if len(entry) == 0:
+            pass
+        elif len(entry) == 1:
+            usage_error(
+                'No amount specified for final entry: {!r}'.format(entry)
+            )
+        elif len(entry) == 2:
+            entries.append(entry)
+        else:
+            assert False, 'Unreachable code.'
+
+        opts.DESTINFO = entries
+        return opts
 
     @staticmethod
     def run(zc, SOURCE, DEST):
-        opid = zc.z_sendmany(opts.SOURCE, opts.DEST)
+        opid = zc.z_sendmany(SOURCE, DEST)
         wait.run(zc, OPID=[opid])
 
 
 @COMMANDS.register
-class wait (object):
+class wait (BaseCommand):
     """Wait until all operations complete and have MINCONF confirmations."""
 
     @staticmethod

@@ -5,13 +5,13 @@ from zcli import clargs, zcashcli, saferjson
 
 def main(args=sys.argv[1:]):
     """
-    Simply certain useful tasks on top of the Zcash RPC interface.
+    Simplify certain useful tasks on top of the Zcash RPC interface.
     """
     (opts, cmdkwargs) = clargs.parse_args(main.__doc__, args)
     init_logging(opts.DEBUG)
 
     zc = zcashcli.ZcashCLI(opts.DATADIR)
-    result = opts.func(zc, **cmdkwargs)
+    result = opts.cmdclass.run(zc, **cmdkwargs)
 
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
 
