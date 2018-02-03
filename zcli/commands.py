@@ -1,10 +1,10 @@
-import pprint
 import time
 from decimal import Decimal
 from functable import FunctionTable
 from zcli.acctab import AccumulatorTable
 
 
+MINCONF = 6
 COMMANDS = FunctionTable()
 
 
@@ -36,29 +36,9 @@ def list_balances(zc):
 @COMMANDS.register
 def send(zc, src, *dstargs):
     """Send."""
-    MINCONF = 6
-
     destitems = parse_send_dst_args(dstargs)
     opid = zc.z_sendmany(src, destitems)
-
-    opinfo = {'status': None}
-    while opinfo['status'] in (None, 'queued', 'executing'):
-        print 'Waiting for completion: {}'.format(opid)
-        time.sleep(13)
-        [opinfo] = zc.z_getoperationresult([opid])
-
-    if opinfo['status'] != 'success':
-        raise SystemExit(pprint.pformat(opinfo))
-
-    txid = opinfo['result']['txid']
-    confirmations = zc.gettransaction(txid)["confirmations"]
-    while confirmations < MINCONF:
-        print 'Waiting for confirmation: {} under {} blocks'.format(
-            txid,
-            confirmations,
-        )
-        time.sleep(167)
-        confirmations = zc.gettransaction(txid)["confirmations"]
+    wait(zc, opid)
 
 
 def parse_send_dst_args(dstargs):
@@ -66,7 +46,7 @@ def parse_send_dst_args(dstargs):
 
     dstinfo = None
     for d in dstargs:
-        if len(dstinfo) == 2:
+        if dstinfo is not None and len(dstinfo) == 2:
             (dstaddr, amount) = dstinfo
             dstinfo = None
 
@@ -101,3 +81,61 @@ def parse_send_dst_args(dstargs):
             assert len(dstinfo) == 2, dstinfo
             (addr, amt) = dstinfo
             destmap.append({'address': addr, 'amount': amt})
+
+    return destmap
+
+
+@COMMANDS.register
+def wait(zc, *opids):
+    """Wait until all operations complete and have MINCONF confirmations."""
+    opids = set(opids)
+
+    txids = []
+
+    somefailed = False
+    while len(opids) > 0:
+        print 'Waiting for completions:'
+        completes = []
+        for opinfo in zc.z_getoperationstatus(list(opids)):
+            opid = opinfo['id']
+            status = opinfo['status']
+            print '  {} - {}'.format(opid, status)
+
+            if status not in {'queued', 'executing'}:
+                opids.remove(opid)
+                completes.append(opid)
+
+        for opinfo in zc.z_getoperationresult(completes):
+            if opinfo['status'] == 'success':
+                opid = opinfo['id']
+                txid = opinfo['result']['txid']
+                txids.append((opid, txid))
+            else:
+                somefailed = True
+                print 'FAILED OPERATION: {!r}'.format(opinfo)
+
+        print
+        if len(opids) > 0:
+            time.sleep(13)
+
+    while txids:
+        print 'Waiting for confirmations:'
+        newtxids = []
+        for (opid, txid) in txids:
+            txinfo = zc.gettransaction(txid, True)
+            confs = txinfo['confirmations']
+            print '  {} - txid: {} - confirmations: {}'.format(
+                opid,
+                txid,
+                confs,
+            )
+            if confs < 0:
+                print 'FAILED TO CONFIRM: {!r}'.format(txinfo)
+            elif confs < MINCONF:
+                newtxids.append((opid, txid))
+        txids = newtxids
+
+        print
+        time.sleep(131)
+
+    return not somefailed

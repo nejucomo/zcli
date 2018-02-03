@@ -1,13 +1,22 @@
 import argparse
 import inspect
 from pathlib2 import Path
-from .commands import COMMANDS
+from zcli.commands import COMMANDS
 
 
 def parse_args(description, args):
     p = argparse.ArgumentParser(description=description)
+    add_standard_args(p)
 
-    p.add_argument(
+    subp = p.add_subparsers()
+    for (name, f) in COMMANDS.iteritems():
+        _add_subcommand(subp, name, f)
+
+    return p.parse_args(args)
+
+
+def add_standard_args(argparser):
+    argparser.add_argument(
         '--datadir',
         dest='DATADIR',
         type=Path,
@@ -15,19 +24,13 @@ def parse_args(description, args):
         help='Node datadir.',
     )
 
-    p.add_argument(
+    argparser.add_argument(
         '--debug',
         dest='DEBUG',
         action='store_true',
         default=False,
         help='Debug output.',
     )
-
-    subp = p.add_subparsers()
-    for (name, f) in COMMANDS.iteritems():
-        _add_subcommand(subp, name, f)
-
-    return p.parse_args(args)
 
 
 def _add_subcommand(subp, name, f):

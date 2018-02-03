@@ -15,7 +15,7 @@ def main(args=sys.argv[1:]):
         args.append(getattr(opts, name))
     van = opts.varargsname
     if van is not None:
-        args.extend(van)
+        args.extend(getattr(opts, van))
 
     result = opts.func(*args)
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
