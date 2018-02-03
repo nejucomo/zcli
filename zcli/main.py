@@ -7,11 +7,11 @@ def main(args=sys.argv[1:]):
     """
     Simplify certain useful tasks on top of the Zcash RPC interface.
     """
-    (opts, cmdkwargs) = clargs.parse_args(main.__doc__, args)
-    init_logging(opts.DEBUG)
+    (opts, cmdfunc, cmdkwargs) = clargs.parse_args(main.__doc__, args)
+    init_logging(opts['DEBUG'])
 
-    zc = zcashcli.ZcashCLI(opts.DATADIR)
-    result = opts.cmdclass.run(zc, **cmdkwargs)
+    zc = zcashcli.ZcashCLI(opts['DATADIR'])
+    result = cmdfunc(zc, **cmdkwargs)
 
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
 

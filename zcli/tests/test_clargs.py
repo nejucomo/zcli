@@ -29,7 +29,11 @@ class parse_args_tests (TestCase):
         self.assertEqual(
             result,
             (
-                m_opts,
+                {
+                    'DATADIR': sentinel.DATADIR,
+                    'DEBUG': sentinel.DEBUG,
+                },
+                m_p.cmdclass.run,
                 {
                     'FAKE_ARG_A': sentinel.FAKE_ARG_A,
                     'FAKE_ARG_B': sentinel.FAKE_ARG_B,

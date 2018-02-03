@@ -8,12 +8,12 @@ class main_tests (TestCase):
     @patch('zcli.clargs.parse_args')
     @patch('zcli.zcashcli.ZcashCLI')
     def test_main(self, m_ZcashCLI, m_parse_args, m_stdout):
-        m_opts = MagicMock()
-        m_opts.DEBUG = True
-        m_opts.cmdclass.run.return_value = ["json", "result"]
+        m_run = MagicMock()
+        m_run.return_value = ["json", "result"]
 
         m_parse_args.return_value = (
-            m_opts,
+            {'DEBUG': True, 'DATADIR': sentinel.DATADIR},
+            m_run,
             {'fake_arg': sentinel.FAKE_ARG},
         )
 
@@ -27,7 +27,7 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_ZcashCLI.mock_calls,
-            [call(m_parse_args.return_value[0].DATADIR)])
+            [call(sentinel.DATADIR)])
 
         self.assertEqual(
             m_stdout.mock_calls,
