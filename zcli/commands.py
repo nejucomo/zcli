@@ -182,7 +182,7 @@ class wait (BaseCommand):
             for opinfo in zc.z_getoperationresult(completes):
                 if opinfo['status'] == 'success':
                     opid = opinfo['id']
-                    txid = opinfo['result']['txid']
+                    txid = opinfo['result']['txid'].encode('utf8')
                     txids.append((opid, txid))
                 else:
                     somefailed = True
