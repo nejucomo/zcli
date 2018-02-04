@@ -210,6 +210,7 @@ class wait (BaseCommand):
             txids = newtxids
 
             print
-            time.sleep(131)
+            if len(txids) > 0:
+                time.sleep(131)
 
         return not somefailed
