@@ -9,7 +9,7 @@ DESCRIPTION = 'Simply certain useful tasks on top of the Zcash RPC interface.',
 setup(
     name=PACKAGE,
     description=DESCRIPTION,
-    version='0.1',
+    version='0.1.1',
     author='Nathan Wilcox',
     author_email='nejucomo+dev@gmail.com',
     license='GPLv3',
@@ -24,10 +24,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            '{} = {}.main:main'.format(
-                PACKAGE.replace('_', '-'),
-                PACKAGE,
-            )
+            '{0} = {0}.main:main'.format(PACKAGE),
         ],
     }
 )
