@@ -11,7 +11,7 @@ def main(args=sys.argv[1:]):
     (opts, cmdfunc, cmdkwargs) = clargs.parse_args(main.__doc__, args)
     init_logging(opts['DEBUG'])
 
-    zc = zcashcli.ZcashCLI(opts['DATADIR'])
+    zc = zcashcli.ComposedZcashCLI(opts['DATADIR'])
     result = cmdfunc(zc, **cmdkwargs)
 
     sys.stdout.write(saferjson.encode_param(result, pretty=True))

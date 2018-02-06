@@ -1,10 +1,8 @@
-import time
 from decimal import Decimal, InvalidOperation
 from functable import FunctionTable
 from zcli.acctab import AccumulatorTable
 
 
-MINCONF = 6
 COMMANDS = FunctionTable()
 
 
@@ -162,55 +160,4 @@ class wait (BaseCommand):
 
     @staticmethod
     def run(zc, OPID):
-        opids = set(OPID)
-
-        txids = []
-
-        somefailed = False
-        while len(opids) > 0:
-            print 'Waiting for completions:'
-            completes = []
-            for opinfo in zc.z_getoperationstatus(list(opids)):
-                opid = opinfo['id']
-                status = opinfo['status']
-                print '  {} - {}'.format(opid, status)
-
-                if status not in {'queued', 'executing'}:
-                    opids.remove(opid)
-                    completes.append(opid)
-
-            for opinfo in zc.z_getoperationresult(completes):
-                if opinfo['status'] == 'success':
-                    opid = opinfo['id']
-                    txid = opinfo['result']['txid'].encode('utf8')
-                    txids.append((opid, txid))
-                else:
-                    somefailed = True
-                    print 'FAILED OPERATION: {!r}'.format(opinfo)
-
-            print
-            if len(opids) > 0:
-                time.sleep(13)
-
-        while txids:
-            print 'Waiting for confirmations:'
-            newtxids = []
-            for (opid, txid) in txids:
-                txinfo = zc.gettransaction(txid, True)
-                confs = txinfo['confirmations']
-                print '  {} - txid: {} - confirmations: {}'.format(
-                    opid,
-                    txid,
-                    confs,
-                )
-                if confs < 0:
-                    print 'FAILED TO CONFIRM: {!r}'.format(txinfo)
-                elif confs < MINCONF:
-                    newtxids.append((opid, txid))
-            txids = newtxids
-
-            print
-            if len(txids) > 0:
-                time.sleep(131)
-
-        return not somefailed
+        return zc.wait_on_opids(OPID)
