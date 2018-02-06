@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 from zcli import clargs, zcashcli, saferjson
@@ -17,9 +18,13 @@ def main(args=sys.argv[1:]):
 
 
 def init_logging(debug):
+    progname = os.path.basename(sys.argv[0])
+    format = ('%(asctime)s {} %(message)s'
+              .format(progname.replace('%', '%%')))
+
     logging.basicConfig(
         stream=sys.stderr,
-        format='%(asctime)s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
+        format=format,
+        datefmt='%Y-%m-%dT%H:%M:%S',
         level=logging.DEBUG if debug else logging.INFO,
     )
