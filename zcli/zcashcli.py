@@ -5,14 +5,23 @@ from zcli import saferjson
 
 
 class ZcashCLI (object):
-    def __init__(self, datadir):
+    def __init__(self, datadir, network='mainnet'):
         assert isinstance(datadir, Path), repr(datadir)
+        assert network in {'mainnet', 'testnet', 'regtest'}, repr(network)
+
         self._execname = 'zcash-cli'
         self._datadir = datadir
+        self._network = network
         self._log = logging.getLogger('ZcashCLI')
 
     def __getattr__(self, method):
-        return ZcashCLIMethod(method, self._execname, self._datadir, self._log)
+        return ZcashCLIMethod(
+            method,
+            self._execname,
+            self._datadir,
+            self._network,
+            self._log,
+        )
 
 
 class ComposedZcashCLI (ZcashCLI):
@@ -35,10 +44,11 @@ class ComposedZcashCLI (ZcashCLI):
 
 
 class ZcashCLIMethod (object):
-    def __init__(self, method, execname, datadir, log):
+    def __init__(self, method, execname, datadir, network, log):
         self._method = method
         self._execname = execname
         self._datadir = datadir
+        self._network = network
         self._log = log
 
     def __call__(self, *args):
@@ -48,11 +58,18 @@ class ZcashCLIMethod (object):
         return result
 
     def _call_raw_result(self, *args):
-        argsprefix = [
+        fullargs = [
             self._execname,
             '-datadir={}'.format(self._datadir),
-            self._method,
         ]
-        fullargs = argsprefix + map(saferjson.encode_param, args)
+        fullargs.extend({
+            'mainnet': [],
+            'testnet': ['-testnet'],
+            'regtest': ['-regtest'],
+        }[self._network])
+
+        fullargs.append(self._method)
+        fullargs.extend(map(saferjson.encode_param, args))
+
         self._log.debug('Running: %r', fullargs)
         return subprocess.check_output(fullargs).rstrip()
