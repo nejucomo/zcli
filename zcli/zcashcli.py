@@ -51,22 +51,28 @@ class ZcashCLIMethod (object):
         self._network = network
         self._log = log
 
-    def __call__(self, *args):
-        result = self._call_raw_result(*args)
+    def __call__(self, *args, **kwargs):
+        result = self._call_raw_result(*args, **kwargs)
         if result.startswith('{') or result.startswith('['):
             result = saferjson.loads(result)
         return result
 
-    def _call_raw_result(self, *args):
+    def _call_raw_result(self, *args, **kwargs):
+        prefixopts = kwargs.pop('prefixopts', [])
+        assert not kwargs, ('unexpected key word args', kwargs)
+
         fullargs = [
             self._execname,
             '-datadir={}'.format(self._datadir),
         ]
+
         fullargs.extend({
             'mainnet': [],
             'testnet': ['-testnet'],
             'regtest': ['-regtest'],
         }[self._network])
+
+        fullargs.extend(prefixopts)
 
         fullargs.append(self._method)
         fullargs.extend(map(saferjson.encode_param, args))
