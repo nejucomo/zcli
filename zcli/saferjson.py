@@ -4,14 +4,13 @@ from zcli.acctab import AccumulatorTable
 
 
 def encode_param(arg, pretty=False):
-    t = type(arg)
-    if t is str:
+    if isinstance(arg, bytes):
         return arg
-    elif t in [int, Decimal]:
-        return str(arg)
-    elif t in [bool, unicode, list, dict, AccumulatorTable]:
+    elif isinstance(arg, (bool, unicode, list, dict, AccumulatorTable)):
         dumpf = dumps_pretty if pretty else dumps_compact
         return dumpf(arg)
+    elif isinstance(arg, (int, Decimal)):
+        return str(arg)
     else:
         assert False, 'Invalid ZcashCLI argument: {!r}'.format(arg)
 
@@ -79,6 +78,10 @@ def loads(s):
 # Private dump helpers:
 def _transcode_to_jsonobj(obj):
     assert isinstance(obj, Decimal), 'Cannot encode to JSON: {!r}'.format(obj)
+    i = int(obj)
+    if i == obj:
+        return i
+
     f = float(obj)
     roundtrip = Decimal(f)
     error = abs(obj - roundtrip)
