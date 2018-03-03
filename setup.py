@@ -9,7 +9,7 @@ DESCRIPTION = 'Simply certain useful tasks on top of the Zcash RPC interface.',
 setup(
     name=PACKAGE,
     description=DESCRIPTION,
-    version='0.1.1',
+    version='0.1.2',
     author='Nathan Wilcox',
     author_email='nejucomo+dev@gmail.com',
     license='GPLv3',
