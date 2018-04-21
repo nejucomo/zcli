@@ -26,6 +26,7 @@ class ZcashCLIMethod_tests (unittest.TestCase):
             'FAKE-METHOD',
             'FAKE-EXEC',
             Path('FAKE-DATADIR'),
+            'mainnet',
             self.m_log,
         )
 

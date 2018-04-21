@@ -1,4 +1,5 @@
 from unittest import TestCase
+from pathlib2 import Path
 from mock import MagicMock, call, patch, sentinel
 from zcli.main import main
 
@@ -6,13 +7,14 @@ from zcli.main import main
 class main_tests (TestCase):
     @patch('sys.stdout')
     @patch('zcli.clargs.parse_args')
-    @patch('zcli.zcashcli.ZcashCLI')
+    @patch('zcli.zcashcli.ComposedZcashCLI')
     def test_main(self, m_ZcashCLI, m_parse_args, m_stdout):
         m_run = MagicMock()
         m_run.return_value = ["json", "result"]
 
+        fakedatadir = Path('fake-path')
         m_parse_args.return_value = (
-            {'DEBUG': True, 'DATADIR': sentinel.DATADIR},
+            {'DEBUG': True, 'DATADIR': fakedatadir},
             m_run,
             {'fake_arg': sentinel.FAKE_ARG},
         )
@@ -27,7 +29,7 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_ZcashCLI.mock_calls,
-            [call(sentinel.DATADIR)])
+            [call(fakedatadir)])
 
         self.assertEqual(
             m_stdout.mock_calls,
