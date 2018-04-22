@@ -1,7 +1,7 @@
 import unittest
 from cStringIO import StringIO
 from textwrap import dedent
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from genty import genty, genty_dataset
 from zcli.saferjson import \
     dump_compact, \
@@ -164,13 +164,14 @@ class dumps_tests (unittest.TestCase):
         actualf = f.getvalue()
         self.assertEqual(actuals, actualf)
 
-    @unittest.skip('Pending regression...')
     def test_dumps_float_precision_error(self):
-        d = Decimal('3e30')
-        self.assertRaisesRegexp(
-            ValueError, r'^Encoding decimal.*introduces error: ',
-            dumps_compact, d,
-        )
+        with localcontext() as ctx:
+            ctx.prec = 32
+            d = Decimal('3e30') + Decimal('0.1')
+            self.assertRaisesRegexp(
+                ValueError, r'^Encoding decimal.*introduces error: ',
+                dumps_compact, d,
+            )
 
     def test_dumps_float_precision_error_okay_because_too_small(self):
         d = Decimal(0.1 + 0.2)
