@@ -1,4 +1,4 @@
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from functable import FunctionTable
 from zcli.acctab import AccumulatorTable
 
@@ -60,82 +60,48 @@ class send (BaseCommand):
             nargs='+',
             help='''
                 Destination arguments in repeating sequence of: ADDR
-                AMOUNT [MEMO]. A MEMO must begin with either "0x" for hex
-                encoding or ":" for a simple string. A MEMO must not be
-                present if ADDR is not a Z Address (beginning with "zc").
+                AMOUNT MEMO. A MEMO may start with '0x' in which case
+                the rest is considered a hex encoded value. A MEMO may
+                start with 's:' in which case the remainder is considered
+                a utf8 string. If a MEMO does not start with either, it
+                is assumed to be a utf8 string. If the ADDR is a t-addr,
+                the MEMO must be the empty string.
             ''',
         )
 
     @staticmethod
     def post_process_args(opts, usage_error):
+        if len(opts.DESTINFO) == 0:
+            usage_error('At least one destination must be supplied.')
+
+        elif len(opts.DESTINFO) % 3 != 0:
+            usage_error(
+                ('DESTINFO must be triplets of ADDR AMOUNT MEMO; '
+                 'found {!r} arguments.')
+                .format(
+                    len(opts.DESTINFO),
+                ),
+            )
+
         entries = []
 
-        entry = {}
-        for di in opts.DESTINFO:
-            if len(entry) == 0:
-                entry['address'] = di
+        di = opts.DESTINFO
+        for (addr, amount, rawmemo) in zip(di[0::3], di[1::3], di[2::3]):
+            entry = {
+                'address': addr,
+                'amount': Decimal(amount),
+            }
 
-            elif len(entry) == 1:
-                try:
-                    entry['amount'] = Decimal(di)
-                except InvalidOperation as e:
-                    usage_error(
-                        ('Could not parse amount; {}')
-                        .format(e)
-                    )
-
-            elif len(entry) == 2:
-                hasmemo = False
-
-                if di.startswith('0x') or di.startswith(':'):
-                    hasmemo = True
-
-                    # It's a memo field:
-                    addr = entry['address']
-                    if addr.startswith('zc'):
-                        if di.startswith('0x'):
-                            # Hex encoding:
-                            memohex = di[2:]
-                            try:
-                                memohex.decode('hex')
-                            except TypeError as e:
-                                usage_error(
-                                    ('Could not decode MEMO from 0x '
-                                     'hexadecimal format: {}')
-                                    .format(e)
-                                )
-                        elif di.startswith(':'):
-                            memohex = di[1:].encode('hex')
-                        else:
-                            assert False, 'Unreachable code.'
-
-                        entry['memo'] = memohex
-                    else:
-                        usage_error(
-                            ('Destination address {!r} is not a Z Address '
-                             'and cannot receive a memo: {!r}')
-                            .format(addr, di)
-                        )
-
-                entries.append(entry)
-                entry = {}
-
-                if not hasmemo:
-                    entry["address"] = di
-
+            if len(rawmemo) == 0:
+                pass
+            elif rawmemo.startswith('0x'):
+                entry['memo'] = rawmemo[2:]
             else:
-                assert False, 'Unreachable code.'
+                if rawmemo.startswith('s:'):
+                    rawmemo = rawmemo[2:]
+                entry['memo'] = rawmemo.encode('hex')
 
-        if len(entry) == 0:
-            pass
-        elif len(entry) == 1:
-            usage_error(
-                'No amount specified for final entry: {!r}'.format(entry)
-            )
-        elif len(entry) == 2:
             entries.append(entry)
-        else:
-            assert False, 'Unreachable code.'
 
         opts.DESTINFO = entries
         return opts
