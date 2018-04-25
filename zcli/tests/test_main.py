@@ -7,8 +7,9 @@ from zcli.main import main
 class main_tests (TestCase):
     @patch('sys.stdout')
     @patch('zcli.clargs.parse_args')
-    @patch('zcli.zcashcli.ComposedZcashCLI')
-    def test_main(self, m_ZcashCLI, m_parse_args, m_stdout):
+    @patch('zcli.zcashcli.ZcashCLI')
+    @patch('zcli.operations.ZcashOperations')
+    def test_main(self, m_ZcashOperations, m_ZcashCLI, m_parse_args, m_stdout):
         m_run = MagicMock()
         m_run.return_value = ["json", "result"]
 
@@ -23,13 +24,19 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_parse_args.mock_calls,
-            [call(main.__doc__, sentinel.ARGS),
-             ])
-        # call().cmdclass.run(m_ZcashCLI.return_value)])
+            [call(main.__doc__, sentinel.ARGS)])
 
         self.assertEqual(
             m_ZcashCLI.mock_calls,
             [call(fakedatadir)])
+
+        self.assertEqual(
+            m_ZcashOperations.mock_calls,
+            [call(m_ZcashCLI.return_value)])
+
+        self.assertEqual(
+            m_run.mock_calls,
+            [call(m_ZcashOperations.return_value, fake_arg=sentinel.FAKE_ARG)])
 
         self.assertEqual(
             m_stdout.mock_calls,

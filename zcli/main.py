@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from zcli import clargs, zcashcli, saferjson
+from zcli import clargs, zcashcli, operations, saferjson
 
 
 def main(args=sys.argv[1:]):
@@ -11,8 +11,10 @@ def main(args=sys.argv[1:]):
     (opts, cmdfunc, cmdkwargs) = clargs.parse_args(main.__doc__, args)
     init_logging(opts['DEBUG'])
 
-    zc = zcashcli.ComposedZcashCLI(opts['DATADIR'])
-    result = cmdfunc(zc, **cmdkwargs)
+    zops = operations.ZcashOperations(
+        zcashcli.ZcashCLI(opts['DATADIR']),
+    )
+    result = cmdfunc(zops, **cmdkwargs)
 
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
 
