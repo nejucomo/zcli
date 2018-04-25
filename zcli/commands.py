@@ -161,3 +161,26 @@ class wait (BaseCommand):
     @staticmethod
     def run(zc, OPID):
         return zc.wait_on_opids(OPID)
+
+
+@COMMANDS.register
+class do (BaseCommand):
+    """Run any zcashd RPC method directly."""
+
+    @staticmethod
+    def add_arg_parser(p):
+        p.add_argument(
+            'METHOD',
+            help='The RPC method name.',
+        )
+
+        p.add_argument(
+            'RPCARG',
+            nargs='*',
+            help='RPC arguments.',
+        )
+
+    @staticmethod
+    def run(zo, METHOD, RPCARG):
+        method = getattr(zo.cli, METHOD)
+        return method(*RPCARG)
