@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib2 import Path
 from zcli.commands import COMMANDS
@@ -23,12 +24,15 @@ def parse_args(description, args):
 
 
 def add_standard_args(argparser):
+    dd = os.environ.get('ZCLI_DATADIR')
+    defaultdatadir = Path(dd) if dd else Path.home() / '.zcash'
+
     argparser.add_argument(
         '--datadir',
         dest='DATADIR',
         type=Path,
-        default=Path.home() / '.zcash',
-        help='Node datadir.',
+        default=defaultdatadir,
+        help='Node datadir. Default: {!r}'.format(str(defaultdatadir)),
     )
 
     argparser.add_argument(

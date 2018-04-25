@@ -1,5 +1,6 @@
+from pathlib2 import Path
 from unittest import TestCase
-from mock import call, patch, sentinel
+from mock import MagicMock, call, patch, sentinel
 from zcli import clargs
 
 
@@ -43,3 +44,30 @@ class parse_args_tests (TestCase):
                 },
             )
         )
+
+    @patch.dict('os.environ', {'ZCLI_DATADIR': 'FAKE_DATADIR'})
+    def test_add_standard_args(self):
+        m_argparser = MagicMock()
+
+        result = clargs.add_standard_args(m_argparser)
+
+        self.assertIs(None, result)
+
+        self.assertEqual(
+            m_argparser.mock_calls,
+            [
+                call.add_argument(
+                    '--datadir',
+                    dest='DATADIR',
+                    type=Path,
+                    default=Path('FAKE_DATADIR'),
+                    help="Node datadir. Default: 'FAKE_DATADIR'",
+                ),
+                call.add_argument(
+                    '--debug',
+                    dest='DEBUG',
+                    action='store_true',
+                    default=False,
+                    help='Debug output.',
+                ),
+            ])
