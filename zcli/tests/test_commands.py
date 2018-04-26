@@ -1,8 +1,8 @@
 from unittest import TestCase
 from decimal import Decimal
 from genty import genty, genty_dataset
-from mock import MagicMock
-from zcli import commands
+from mock import MagicMock, sentinel
+from zcli import commands, operations
 
 
 class FakeUsageError (Exception):
@@ -79,3 +79,26 @@ class send_tests (TestCase):
             m_opts,
             FakeUsageError.usage_error,
         )
+
+
+@genty
+class commands_smoketests (TestCase):
+    dataset = {
+        'list_balances': (
+            commands.list_balances,
+            [],
+            sentinel.FIXME,
+        ),
+    }
+
+    @genty_dataset(**dataset)
+    def test_run(self, cls, args, expected):
+        m_cli = MagicMock
+        ops = operations.ZcashOperations(m_cli)
+        actual = cls.run(ops, *args)
+        self.assertEqual(expected, actual)
+
+    def test_dataset_complete(self):
+        expected = set(commands.COMMANDS.keys())
+        actual = set(self.dataset.keys())
+        self.assertEqual(expected, actual)
