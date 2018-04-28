@@ -1,7 +1,7 @@
 from unittest import TestCase
 from decimal import Decimal
 from genty import genty, genty_dataset
-from mock import MagicMock, sentinel
+from mock import MagicMock, call
 from zcli import commands, operations
 
 
@@ -83,22 +83,78 @@ class send_tests (TestCase):
 
 @genty
 class commands_smoketests (TestCase):
-    dataset = {
-        'list_balances': (
-            commands.list_balances,
-            [],
-            sentinel.FIXME,
-        ),
-    }
+    """High level smoketests of commands."""
+
+    dataset = dict(
+        (cls.__name__, (cls, args, checkresult, expectedclicalls))
+        for (cls, args, checkresult, expectedclicalls)
+        in [
+            (
+                commands.list_balances,
+                [],
+                lambda _: {'total': 0, 'addresses': {}},
+                None,
+            ),
+            (
+                commands.do,
+                ['help', ['getinfo']],
+                lambda m: isinstance(m, MagicMock),
+                [call.help('getinfo')],
+            ),
+            (
+                commands.send,
+                [
+                    'z-fake-src-addr',
+                    ['z-fake-dst-addr', '42.23', 's:fake memo'],
+                ],
+                lambda x: x,
+                None,
+            ),
+            (
+                commands.wait,
+                [
+                    ['fake op 0'],
+                ],
+                lambda b: b is True,
+                None,
+            ),
+        ]
+    )
 
     @genty_dataset(**dataset)
-    def test_run(self, cls, args, expected):
-        m_cli = MagicMock
+    def test_run(self, cls, args, checkresult, expectedclicalls):
+        m_cli = self._make_mock_cli()
         ops = operations.ZcashOperations(m_cli)
-        actual = cls.run(ops, *args)
-        self.assertEqual(expected, actual)
+        result = cls.run(ops, *args)
+        self.assertTrue(checkresult(result), result)
+        if expectedclicalls is not None:
+            self.assertEqual(m_cli.mock_calls, expectedclicalls)
 
-    def test_dataset_complete(self):
+    def test_dataset_completeness(self):
         expected = set(commands.COMMANDS.keys())
         actual = set(self.dataset.keys())
         self.assertEqual(expected, actual)
+
+    def _make_mock_cli(self):
+        m_cli = MagicMock()
+
+        def fake_z_getop(opids):
+            return [
+                {
+                    'id': opid,
+                    'status': 'success',
+                    'result': {
+                        'txid': 'fake txid for {}'.format(opid)
+                    },
+                }
+                for opid
+                in opids
+            ]
+
+        m_cli.z_getoperationstatus = fake_z_getop
+        m_cli.z_getoperationresult = fake_z_getop
+        m_cli.gettransaction.return_value = {
+            'confirmations': 6,
+        }
+
+        return m_cli

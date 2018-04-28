@@ -21,17 +21,19 @@ class list_balances (BaseCommand):
     """List all known address balances."""
 
     @staticmethod
-    def run(zc):
+    def run(ops):
         balances = AccumulatorTable()
 
         # Gather t-addr balances:
-        for utxo in zc.listunspent():
+        for utxo in ops.cli.listunspent():
             if utxo['spendable'] is True:
                 balances[utxo['address']] += utxo['amount']
 
         # Gather t-addr balances:
-        for zaddr in zc.z_listaddresses():
-            balances[zaddr] = Decimal(zc.z_getbalance(zaddr.encode('utf8')))
+        for zaddr in ops.cli.z_listaddresses():
+            balances[zaddr] = Decimal(
+                ops.cli.z_getbalance(zaddr.encode('utf8')),
+            )
 
         return {
             'total': sum(balances.values()),
@@ -107,9 +109,9 @@ class send (BaseCommand):
         return opts
 
     @staticmethod
-    def run(zc, SOURCE, DESTINFO):
-        opid = zc.z_sendmany(SOURCE, DESTINFO)
-        wait.run(zc, OPID=[opid])
+    def run(ops, SOURCE, DESTINFO):
+        opid = ops.cli.z_sendmany(SOURCE, DESTINFO)
+        return wait.run(ops, OPID=[opid])
 
 
 @COMMANDS.register
@@ -125,8 +127,8 @@ class wait (BaseCommand):
         )
 
     @staticmethod
-    def run(zc, OPID):
-        return zc.wait_on_opids(OPID)
+    def run(ops, OPID):
+        return ops.wait_on_opids(OPID)
 
 
 @COMMANDS.register
