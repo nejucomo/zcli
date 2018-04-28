@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from subprocess import CalledProcessError
 from zcli import clargs, zcashcli, operations, saferjson
 
 
@@ -14,7 +15,10 @@ def main(args=sys.argv[1:]):
     zops = operations.ZcashOperations(
         zcashcli.ZcashCLI(opts['DATADIR']),
     )
-    result = cmdfunc(zops, **cmdkwargs)
+    try:
+        result = cmdfunc(zops, **cmdkwargs)
+    except CalledProcessError as e:
+        raise SystemExit(e)
 
     sys.stdout.write(saferjson.encode_param(result, pretty=True))
 
