@@ -20,7 +20,7 @@ class encode_param_tests (unittest.TestCase):
         false=(False, 'false'),
         integer=(42, '42'),
         decimal=(Decimal('42.03489096'), '42.03489096'),
-        text=(u'bar', '"bar"'),
+        text=(u'bar', 'bar'),
         array_empty=([], '[]'),
         array_full=(['a', 'b', 'c'], '["a","b","c"]'),
         object_empty=({}, '{}'),

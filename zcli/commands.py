@@ -32,7 +32,7 @@ class list_balances (BaseCommand):
         # Gather t-addr balances:
         for zaddr in ops.cli.z_listaddresses():
             balances[zaddr] = Decimal(
-                ops.cli.z_getbalance(zaddr.encode('utf8')),
+                ops.cli.z_getbalance(zaddr),
             )
 
         return {

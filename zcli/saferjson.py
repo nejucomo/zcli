@@ -4,7 +4,9 @@ from zcli.acctab import AccumulatorTable
 
 
 def encode_param(arg, pretty=False):
-    if isinstance(arg, bytes):
+    if isinstance(arg, unicode):
+        return arg.encode('utf8')
+    elif isinstance(arg, bytes):
         return arg
     elif isinstance(arg, (bool, unicode, list, dict, AccumulatorTable)):
         dumpf = dumps_pretty if pretty else dumps_compact

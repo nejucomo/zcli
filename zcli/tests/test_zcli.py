@@ -41,7 +41,7 @@ class ZcashCLIMethod_tests (unittest.TestCase):
         ),
         jsonstuff=(
             [u'a', ['b', {'c': 'coconut'}]],
-            ['"a"', '["b",{"c":"coconut"}]'],
+            ['a', '["b",{"c":"coconut"}]'],
         ),
     )
 

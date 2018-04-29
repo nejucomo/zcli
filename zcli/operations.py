@@ -19,12 +19,11 @@ class ZcashOperations (object):
         while blockhash is not None:
             block = self.cli.getblock(blockhash)
             yield block
-            blockhash = block.get('nextblockhash').encode('utf8')
+            blockhash = block.get('nextblockhash')
 
     def iter_transactions(self, startblockhash=None):
         for block in self.iter_blocks(startblockhash):
-            for txidu in block['tx']:
-                txid = txidu.encode('utf8')
+            for txid in block['tx']:
                 yield (block, self.cli.getrawtransaction(txid, 1))
 
     def get_taddr_balances(self):
@@ -57,7 +56,7 @@ class ZcashOperations (object):
                 for opinfo in self.cli.z_getoperationresult(completes):
                     if opinfo['status'] == 'success':
                         opid = opinfo['id']
-                        txid = opinfo['result']['txid'].encode('utf8')
+                        txid = opinfo['result']['txid']
                         txids.append((opid, txid))
                     else:
                         somefailed = True
