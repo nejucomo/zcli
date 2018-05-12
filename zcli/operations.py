@@ -1,6 +1,6 @@
-import logging
 import time
 from decimal import Decimal
+from zcli.log import zlog
 
 
 MINCONF = 6
@@ -41,12 +41,12 @@ class ZcashOperations (object):
 
         somefailed = False
         while len(opids) > 0:
-            logging.debug('Waiting for completions:')
+            zlog.debug('Waiting for completions:')
             completes = []
             for opinfo in self.cli.z_getoperationstatus(list(opids)):
                 opid = opinfo['id']
                 status = opinfo['status']
-                logging.debug('  %s - %s', opid, status)
+                zlog.debug('  %s - %s', opid, status)
 
                 if status not in {'queued', 'executing'}:
                     opids.remove(opid)
@@ -60,31 +60,31 @@ class ZcashOperations (object):
                         txids.append((opid, txid))
                     else:
                         somefailed = True
-                        logging.warn('FAILED OPERATION: %r', opinfo)
+                        zlog.warn('FAILED OPERATION: %r', opinfo)
 
-            logging.debug('')
+            zlog.debug('')
             if len(opids) > 0:
                 time.sleep(13)
 
         while txids:
-            logging.debug('Waiting for confirmations:')
+            zlog.debug('Waiting for confirmations:')
             newtxids = []
             for (opid, txid) in txids:
                 txinfo = self.cli.gettransaction(txid, True)
                 confs = txinfo['confirmations']
-                logging.debug(
+                zlog.debug(
                     '  %s - txid: %s - confirmations: %s',
                     opid,
                     txid,
                     confs,
                 )
                 if confs < 0:
-                    logging.warn('FAILED TO CONFIRM: %r', txinfo)
+                    zlog.warn('FAILED TO CONFIRM: %r', txinfo)
                 elif confs < confirmations:
                     newtxids.append((opid, txid))
             txids = newtxids
 
-            logging.debug('')
+            zlog.debug('')
             if len(txids) > 0:
                 time.sleep(77)
 
