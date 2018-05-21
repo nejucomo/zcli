@@ -1,8 +1,9 @@
 from unittest import TestCase
 from decimal import Decimal
 from genty import genty, genty_dataset
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 from zcli import commands, operations
+from zcli.tests.utils import FAKE_OPID
 
 
 class FakeUsageError (Exception):
@@ -107,15 +108,15 @@ class commands_smoketests (TestCase):
                     'z-fake-src-addr',
                     ['z-fake-dst-addr', '42.23', 's:fake memo'],
                 ],
-                lambda x: x,
+                lambda txids: isinstance(txids, list) and len(txids) == 1,
                 None,
             ),
             (
                 commands.wait,
                 [
-                    ['fake op 0'],
+                    [FAKE_OPID],
                 ],
-                lambda b: b is True,
+                lambda txids: isinstance(txids, list) and len(txids) == 1,
                 None,
             ),
         ]
@@ -124,9 +125,13 @@ class commands_smoketests (TestCase):
     @genty_dataset(**dataset)
     def test_run(self, cls, args, checkresult, expectedclicalls):
         m_cli = self._make_mock_cli()
+        m_ui = MagicMock()
         ops = operations.ZcashOperations(m_cli)
-        result = cls.run(ops, *args)
-        self.assertTrue(checkresult(result), result)
+
+        with patch('time.sleep'):
+            result = cls.run(m_ui, ops, *args)
+
+        self.assertTrue(checkresult(result), repr(result))
         if expectedclicalls is not None:
             self.assertEqual(m_cli.mock_calls, expectedclicalls)
 
@@ -153,6 +158,7 @@ class commands_smoketests (TestCase):
 
         m_cli.z_getoperationstatus = fake_z_getop
         m_cli.z_getoperationresult = fake_z_getop
+        m_cli.z_sendmany.return_value = FAKE_OPID
         m_cli.gettransaction.return_value = {
             'confirmations': 6,
         }

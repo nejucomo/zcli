@@ -63,11 +63,22 @@ class parse_args_tests (TestCase):
                     default=Path('FAKE_DATADIR'),
                     help="Node datadir. Default: 'FAKE_DATADIR'",
                 ),
-                call.add_argument(
-                    '--debug',
-                    dest='DEBUG',
-                    action='store_true',
-                    default=False,
-                    help='Debug output.',
+                call.add_mutually_exclusive_group(),
+                call.set_defaults(VERBOSITY='standard'),
+                call.add_mutually_exclusive_group().add_argument(
+                    '--quiet',
+                    dest='VERBOSITY',
+                    action='store_const',
+                    const='quiet',
+                    help=('Suppress status updates ' +
+                          '(but not failures) on stderr.'),
                 ),
-            ])
+                call.add_mutually_exclusive_group().add_argument(
+                    '--debug',
+                    dest='VERBOSITY',
+                    action='store_const',
+                    const='debug',
+                    help='Include debug output on stderr.',
+                ),
+            ],
+        )

@@ -35,12 +35,23 @@ def add_standard_args(argparser):
         help='Node datadir. Default: {!r}'.format(str(defaultdatadir)),
     )
 
-    argparser.add_argument(
+    g = argparser.add_mutually_exclusive_group()
+    argparser.set_defaults(VERBOSITY='standard')
+
+    g.add_argument(
+        '--quiet',
+        dest='VERBOSITY',
+        action='store_const',
+        const='quiet',
+        help='Suppress status updates (but not failures) on stderr.',
+    )
+
+    g.add_argument(
         '--debug',
-        dest='DEBUG',
-        action='store_true',
-        default=False,
-        help='Debug output.',
+        dest='VERBOSITY',
+        action='store_const',
+        const='debug',
+        help='Include debug output on stderr.',
     )
 
 

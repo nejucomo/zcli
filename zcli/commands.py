@@ -21,7 +21,7 @@ class list_balances (BaseCommand):
     """List all known address balances."""
 
     @staticmethod
-    def run(ops):
+    def run(_ui, ops):
         balances = AccumulatorTable()
 
         # Gather t-addr balances:
@@ -109,9 +109,9 @@ class send (BaseCommand):
         return opts
 
     @staticmethod
-    def run(ops, SOURCE, DESTINFO):
+    def run(ui, ops, SOURCE, DESTINFO):
         opid = ops.cli.z_sendmany(SOURCE, DESTINFO)
-        return wait.run(ops, OPID=[opid])
+        return wait.run(ui, ops, OPID=[opid])
 
 
 @COMMANDS.register
@@ -127,8 +127,8 @@ class wait (BaseCommand):
         )
 
     @staticmethod
-    def run(ops, OPID):
-        return ops.wait_on_opids(OPID)
+    def run(ui, ops, OPID):
+        return ops.wait(ui, OPID)
 
 
 @COMMANDS.register
@@ -149,6 +149,6 @@ class do (BaseCommand):
         )
 
     @staticmethod
-    def run(zo, METHOD, RPCARG):
+    def run(_ui, zo, METHOD, RPCARG):
         method = getattr(zo.cli, METHOD)
         return method(*RPCARG)

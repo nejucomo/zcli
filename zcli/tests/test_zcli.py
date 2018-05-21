@@ -8,26 +8,28 @@ from zcli.zcashcli import ZcashCLI, ZcashCLIMethod
 class ZcashCLI_tests (unittest.TestCase):
     def test_getattr(self):
         f_datadir = Path('FAKE-DATADIR')
-        zcli = ZcashCLI(f_datadir)
+        m_ui = MagicMock()
+        zcli = ZcashCLI(m_ui, f_datadir)
 
         m = zcli.some_method
 
+        self.assertIs(zcli._ui, m_ui)
+        self.assertIs(zcli._ui, m._ui)
         self.assertIsInstance(m, ZcashCLIMethod)
         self.assertEqual('zcash-cli', m._execname)
         self.assertEqual(f_datadir, m._datadir)
-        self.assertIs(zcli._log, m._log)
 
 
 @genty
 class ZcashCLIMethod_tests (unittest.TestCase):
     def setUp(self):
-        self.m_log = MagicMock()
+        self.m_ui = MagicMock()
         self.m = ZcashCLIMethod(
+            self.m_ui,
             'FAKE-METHOD',
             'FAKE-EXEC',
             Path('FAKE-DATADIR'),
             'mainnet',
-            self.m_log,
         )
 
     call_rpc_argsets = dict(
@@ -59,8 +61,8 @@ class ZcashCLIMethod_tests (unittest.TestCase):
         ] + expectedargs
 
         self.assertEqual(
-            self.m_log.mock_calls,
-            [call.debug('Running: %r', fullexpectedargs)],
+            self.m_ui.mock_calls,
+            [call.debug('Running: {!r}', fullexpectedargs)],
         )
 
         self.assertEqual(

@@ -1,36 +1,35 @@
 import subprocess
-import logging
 from pathlib2 import Path
 from zcli import saferjson
 
 
 class ZcashCLI (object):
-    def __init__(self, datadir, network='mainnet'):
+    def __init__(self, ui, datadir, network='mainnet'):
         assert isinstance(datadir, Path), repr(datadir)
         assert network in {'mainnet', 'testnet', 'regtest'}, repr(network)
 
+        self._ui = ui
         self._execname = 'zcash-cli'
         self._datadir = datadir
         self._network = network
-        self._log = logging.getLogger('ZcashCLI')
 
     def __getattr__(self, method):
         return ZcashCLIMethod(
+            self._ui,
             method,
             self._execname,
             self._datadir,
             self._network,
-            self._log,
         )
 
 
 class ZcashCLIMethod (object):
-    def __init__(self, method, execname, datadir, network, log):
+    def __init__(self, ui, method, execname, datadir, network):
+        self._ui = ui
         self._method = method
         self._execname = execname
         self._datadir = datadir
         self._network = network
-        self._log = log
 
     def __call__(self, *args, **kwargs):
         result = self._call_raw_result(*args, **kwargs)
@@ -58,5 +57,5 @@ class ZcashCLIMethod (object):
         fullargs.append(self._method)
         fullargs.extend(map(saferjson.encode_param, args))
 
-        self._log.debug('Running: %r', fullargs)
+        self._ui.debug('Running: {!r}', fullargs)
         return subprocess.check_output(fullargs).rstrip()
