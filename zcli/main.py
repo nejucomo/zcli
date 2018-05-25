@@ -9,10 +9,10 @@ def main(args=sys.argv[1:]):
     """
     (opts, cmdfunc, cmdkwargs) = clargs.parse_args(main.__doc__, args)
 
-    zops = operations.ZcashOperations(
-        zcashcli.ZcashCLI(opts['DATADIR']),
-    )
     uicb = ui.make_ui(opts['VERBOSITY'])
+    zops = operations.ZcashOperations(
+        zcashcli.ZcashCLI(uicb, opts['DATADIR']),
+    )
     try:
         result = cmdfunc(uicb, zops, **cmdkwargs)
     except CalledProcessError as e:

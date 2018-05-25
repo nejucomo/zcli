@@ -11,7 +11,7 @@ class parse_args_tests (TestCase):
         class FakeOpts (object):
             def __init__(self):
                 self.DATADIR = sentinel.DATADIR
-                self.DEBUG = sentinel.DEBUG
+                self.VERBOSITY = sentinel.VERBOSITY
                 self.FAKE_ARG_A = sentinel.FAKE_ARG_A
                 self.FAKE_ARG_B = sentinel.FAKE_ARG_B
 
@@ -35,7 +35,7 @@ class parse_args_tests (TestCase):
             (
                 {
                     'DATADIR': sentinel.DATADIR,
-                    'DEBUG': sentinel.DEBUG,
+                    'VERBOSITY': sentinel.VERBOSITY,
                 },
                 m_cmdclass.run,
                 {

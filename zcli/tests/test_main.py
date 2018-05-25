@@ -36,7 +36,7 @@ class main_tests (TestCase):
 
         self.assertEqual(
             m_ZcashCLI.mock_calls,
-            [call(fakedatadir)])
+            [call(m_make_ui.return_value, fakedatadir)])
 
         self.assertEqual(
             m_ZcashOperations.mock_calls,

@@ -17,7 +17,7 @@ def parse_args(description, args):
     cmdkwargs = vars(cmdclass.post_process_args(opts, p.error))
 
     globopts = {}
-    for gopt in ['DATADIR', 'DEBUG']:
+    for gopt in ['DATADIR', 'VERBOSITY']:
         globopts[gopt] = cmdkwargs.pop(gopt)
 
     return (globopts, cmdclass.run, cmdkwargs)
