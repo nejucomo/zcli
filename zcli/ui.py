@@ -12,7 +12,7 @@ def make_ui(verbosity):
 
 def _write_line(tmpl, *args, **kw):
     sys.stderr.write(
-        '{}{}\n'.format(
+        '{} {}\n'.format(
             time.strftime('%Y-%m-%d %H:%M:%S%z'),
             tmpl.format(*args, **kw),
         ),

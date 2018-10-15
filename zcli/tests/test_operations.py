@@ -43,19 +43,24 @@ class ZcashOperations_tests (TestCase):
         )
 
         self.assertEqual(
-            self.m_ui.mock_calls,
-            [call.status(
+            self.m_ui.handle_failure.mock_calls,
+            [],
+        )
+
+        self.assertEqual(
+            self.m_ui.status.mock_calls,
+            [call(
                 ('Waiting {} seconds for {} incomplete operations '
                  'and {} unconfirmed transactions.'),
                 interval,
                 1,
                 0),
-             call.status(
+             call(
                  'Operation {} transition: {!r} -> {!r}',
                  FAKE_OPID,
                  'unknown',
                  'success'),
-             call.status(
+             call(
                  'Transaction {!r} final ({} >= {} confirmations)',
                  sentinel.TXID_0,
                  6,

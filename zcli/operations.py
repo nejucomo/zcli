@@ -50,6 +50,9 @@ class ZcashOperations (object):
             self._segregate_opids_and_txids(opidsandtxids)
 
         while opidstatuses or pendingtxids:
+            ui.debug('opidstatuses {!r}', opidstatuses)
+            ui.debug('pendingtxids {!r}', pendingtxids)
+
             ui.status(
                 ('Waiting {} seconds for {} incomplete operations '
                  'and {} unconfirmed transactions.'),
@@ -117,7 +120,12 @@ class ZcashOperations (object):
         newtxids = []
         remainingopids = {}
 
-        for opinfo in self.cli.z_getoperationresult(opidstatuses.keys()):
+        if not opidstatuses:
+            return (newtxids, remainingopids)
+
+        for opinfo in self.cli.z_getoperationstatus(opidstatuses.keys()):
+            ui.debug('opid status info {!r}', opinfo)
+
             opid = opinfo['id']
             newstatus = opinfo['status']
             oldstatus = opidstatuses[opid]
@@ -132,15 +140,20 @@ class ZcashOperations (object):
 
             if newstatus in {'queued', 'executing'}:
                 remainingopids[opid] = newstatus
-            elif newstatus == 'success':
-                txid = opinfo['result']['txid']
-                newtxids.append(txid)
             else:
-                ui.handle_failure(
-                    'Unexpected status {!r} for OPID {!r}.',
-                    newstatus,
-                    opid,
-                )
+                # remove the status and check that it didn't change:
+                [opinfo2] = self.cli.z_getoperationresult([opid])
+                assert opinfo == opinfo2, (opinfo, opinfo2)
+
+                if newstatus == 'success':
+                    txid = opinfo['result']['txid']
+                    newtxids.append(txid)
+                else:
+                    ui.handle_failure(
+                        'Unexpected status {!r} for OPID {!r}.',
+                        newstatus,
+                        opid,
+                    )
 
         return (newtxids, remainingopids)
 
@@ -149,6 +162,8 @@ class ZcashOperations (object):
 
         for txid in txids:
             confs = self.cli.gettransaction(txid)['confirmations']
+            ui.debug('txid {!r} confirmations {!r}', txid, confs)
+
             if confs < 0:
                 ui.handle_failure(
                     'Transaction {!r} unconfirmed due to reorg (confs = {}).',
